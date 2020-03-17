@@ -21,7 +21,7 @@ use lib "$Bin";
 use Data::Dumper;
 use Getopt::Long;
 
-my $vsver="vs2017";
+my $vsver="vs2019";
 
 my %ENABLED = (CUDA => 0,
                OPENBLAS => 0,
@@ -33,19 +33,22 @@ GetOptions ("vsver=s" => \$vsver,
 			"enable-mkl" => sub {$ENABLED{OPENBLAS}=0; $ENABLED{MKL}=1;},
 			);
 
-my %TOOLS=( default=> "14.1",
+my %TOOLS=( default=> "14.2",
             vs2015 => "14.0",
-            vs2017 => "14.1"
+            vs2017 => "14.1",
+            vs2019 => "14.2"
             );
 
-my %FORMAT=( default=> "14.10",
-             vs2015 =>  "14.00",
-             vs2017 =>  "14.10"
+my %FORMAT=( default=> "14.20",
+             vs2015 => "14.00",
+             vs2017 => "14.10",
+             vs2019 => "14.20"
              );
 
-my %TOOLSET=( default=> "v141",
+my %TOOLSET=( default=> "v142",
               vs2015 => "v140",
-              vs2017 => "v141"
+              vs2017 => "v141",
+              vs2019 => "v142"
               );
 
 
@@ -88,7 +91,7 @@ my @propsFiles = (
 );
 
 my %optionalProps = (
-	CUDA => "$Bin/cuda_7.0.props"
+	CUDA => "$Bin/cuda_10.2.props"
 	);
 
 # see http://www.mztools.com/Articles/2008/MZ2008017.aspx for list of GUIDs for VS solutions
@@ -251,6 +254,8 @@ sub parseMakefile {
 
         if ($type =~ /LIBNAME/) {
           $alibs->{$item} = 1;
+        } elsif ($type =~ /TESTFILES/ && $path =~ /\/src\/base\/$/) {
+          $deps->{$path}->{'kaldi-base'} = 1;
         }
       }
     }
@@ -517,7 +522,7 @@ sub writeProjectFiles {
 ";
   if ($ENABLED{CUDA}) {
   print PROJ
-'    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 7.0.props" />
+'    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 10.2.props" />
 '
   }
   print PROJ
@@ -528,7 +533,7 @@ sub writeProjectFiles {
 ";
   if ($ENABLED{CUDA}) {
   print PROJ
-"    <Import Project=\"..\\cuda_7.0.props\" />
+"    <Import Project=\"..\\cuda_10.2.props\" />
 "
   }
   print PROJ
@@ -541,7 +546,7 @@ sub writeProjectFiles {
 ";
   if ($ENABLED{CUDA}) {
   print PROJ
-"    <Import Project=\"..\\cuda_7.0.props\" />
+"    <Import Project=\"..\\cuda_10.2.props\" />
 ";
   }
   print PROJ
@@ -554,7 +559,7 @@ sub writeProjectFiles {
 ";
   if ($ENABLED{CUDA}) {
   print PROJ
-"    <Import Project=\"..\\cuda_7.0.props\" />
+"    <Import Project=\"..\\cuda_10.2.props\" />
 ";
   }
   print PROJ
@@ -567,7 +572,7 @@ sub writeProjectFiles {
 ";
   if ($ENABLED{CUDA}) {
   print PROJ
-"    <Import Project=\"..\\cuda_7.0.props\" />
+"    <Import Project=\"..\\cuda_10.2.props\" />
 ";
   }
   print PROJ
@@ -770,13 +775,17 @@ sub writeProjectFiles {
   }
 
   # refs
-  if (($projlist->{ALL}->{$projname}->{'type'} !~ /LIBNAME/) &&
+  if ((($projlist->{ALL}->{$projname}->{'type'} !~ /LIBNAME/) ||
+       ($projlist->{ALL}->{$projname}->{'type'} =~ /LIBNAME/) && ($projname =~ /cuda/)) &&
       (scalar keys %{$projdeps->{$projlist->{ALL}->{$projname}->{'path'}}} > 0)) {
     print PROJ
 "  <ItemGroup>
 ";
     foreach my $lib (sort { $a cmp $b } keys%{$projdeps->{$projlist->{ALL}->{$projname}->{'path'}}}) {
       my $refProjFileName = makeRelPath(winPath(getProjFileDir($lib) . "/$lib.vcxproj"), $projFileName);
+      if (($projname =~ /cuda/) && ($refProjFileName =~ $projname)) {
+        next;
+      }
       print PROJ
 "    <ProjectReference Include=\"" . $refProjFileName . "\">
       <Project>" .   lc($projguids->{$lib}) . "</Project>
@@ -795,7 +804,7 @@ sub writeProjectFiles {
 ";
   if ($ENABLED{CUDA}) {
     print PROJ
-'    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 7.0.targets" />
+'    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 10.2.targets" />
 ';
   }
   print PROJ

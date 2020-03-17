@@ -9,7 +9,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(OPENFSTLIB)\src\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>fst.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libfst.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions> %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>

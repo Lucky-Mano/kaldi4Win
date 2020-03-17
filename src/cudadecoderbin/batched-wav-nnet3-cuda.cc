@@ -198,8 +198,17 @@ int main(int argc, char *argv[]) {
     double tot_like = 0.0;
     int64 num_frames = 0;
     double total_audio = 0;
-
+#if !defined(_MSC_VER)
     nvtxRangePush("Global Timer");
+#else
+    char* wStrC = "Global Timer";
+    WCHAR	wStrW[50];
+    size_t wLen = 0;
+    errno_t err = 0;
+
+    err = mbstowcs_s(&wLen, wStrW, 20, wStrC, _TRUNCATE);
+    nvtxRangePush(wStrW);
+#endif
 
     int num_groups_done = 0;
 

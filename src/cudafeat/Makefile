@@ -12,7 +12,7 @@ endif
 
 TESTFILES =
 
-OBJFILES +=  feature-window-cuda.o \
+OBJFILES =  feature-window-cuda.o \
 	feature-spectral-cuda.o \
 	feature-online-cmvn-cuda.o \
 	online-ivector-feature-cuda-kernels.o \
